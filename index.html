@@ -1,0 +1,77 @@
+<!-- import aframe and then ar.js with image tracking / location based features -->
+<script src="https://cdn.jsdelivr.net/gh/aframevr/aframe@1c2407b26c61958baa93967b5412487cd94b290b/dist/aframe-master.min.js"></script>
+<script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-nft.js"></script>
+<script src="gesture-detector.js"></script>
+<script src="gesture-handler.js"></script>
+<!-- style for the loader -->
+<style>
+    .arjs-loader {
+        height: 100%;
+        width: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        background-color: rgba(0, 0, 0, 0.8);
+        z-index: 9999;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .arjs-loader div {
+        text-align: center;
+        font-size: 1.25em;
+        color: white;
+    }
+</style>
+
+<body style="margin : 0px; overflow: hidden;">
+    <!-- minimal loader shown until image descriptors are loaded. Loading may take a while according to the device computational power -->
+    <div class="arjs-loader">
+        <div>Loading, please wait...</div>
+    </div>
+    <!-- a-frame scene -->
+    <a-scene gesture-detector vr-mode-ui="enabled: false;" renderer="logarithmicDepthBuffer: true;" embedded arjs="trackingMethod: best; sourceType: webcam;debugUIEnabled: false;">
+        <!-- a-nft is the anchor that defines an Image Tracking entity -->
+        <!-- on 'url' use the path to the Image Descriptors created before. -->
+        <!-- the path should end with the name without the extension e.g. if file is 'pinball.fset' the path should end with 'pinball' -->
+        <a-nft type="nft" markerhandler-1 url="marker" size="1" raycaster="objects: .clickable" emitevents="true" cursor="fuse: false; rayOrigin: mouse;" smooth="true" smoothCount="10" smoothTolerance=".5" smoothThreshold="5">
+            <!-- as a child of the a-nft entity, you can define the content to show. here's a GLTF model entity -->
+            <a-entity scale="1 1 1" position="50 150 0" class="clickable" gltf-model="question_mark.glb"></a-entity>
+        </a-nft>
+        <a-nft type="nft" url="marker2" emitevents="true" smooth="true" smoothCount="10" smoothTolerance=".01" smoothThreshold="5">
+            <!-- as a child of the a-nft entity, you can define the content to show. here's a GLTF model entity -->
+            <a-entity gltf-model="" scale="5 5 5" position="0 0 0">
+            </a-entity>
+        </a-nft>
+        <!-- static camera that moves according to the device movemenents -->
+        <a-entity camera></a-entity>
+    </a-scene>
+    <script>
+        // import this on your HTML
+        window.addEventListener('load', () => {
+            const camera = document.querySelector('[camera]');
+            const marker = document.querySelector('a-nft');
+            let check;
+
+            marker.addEventListener('markerFound', () => {
+                let cameraPosition = camera.object3D.position;
+                let markerPosition = marker.object3D.position;
+                let distance = cameraPosition.distanceTo(markerPosition)
+
+                check = setInterval(() => {
+                    cameraPosition = camera.object3D.position;
+                    markerPosition = marker.object3D.position;
+                    distance = cameraPosition.distanceTo(markerPosition)
+
+                    // do what you want with the distance:
+                    console.log(distance);
+                }, 100);
+            });
+
+            marker.addEventListener('markerLost', () => {
+                clearInterval(check);
+            })
+        })
+    </script>
+</body>
